@@ -1,4 +1,4 @@
-codespell==2.4.1
+codespell==2.4.3
 mypy==2.0.0
 pre-commit==4.6.2
 pre-commit-hooks==6.0.0
