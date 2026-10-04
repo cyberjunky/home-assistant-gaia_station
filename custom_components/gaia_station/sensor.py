@@ -15,11 +15,12 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
     CONCENTRATION_PARTS_PER_MILLION,
+    PERCENTAGE,
     EntityCategory,
     UnitOfElectricPotential,
+    UnitOfInformation,
     UnitOfTemperature,
     UnitOfTime,
-    PERCENTAGE,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -185,7 +186,7 @@ SYSTEM_SENSORS: tuple[GaiaStationSensorEntityDescription, ...] = (
     GaiaStationSensorEntityDescription(
         key="sys_heap",
         name="Free Heap Memory",
-        native_unit_of_measurement="B",
+        native_unit_of_measurement=UnitOfInformation.BYTES,
         device_class=SensorDeviceClass.DATA_SIZE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("sys_heap"),
@@ -221,6 +222,21 @@ ALL_STATIC_SENSORS = (
 )
 
 
+# Statistics exposed per PMS sensor group: (data key suffix, entity name suffix)
+PMS_STATS: tuple[tuple[str, str], ...] = (
+    ("latest", ""),
+    ("mean", " Mean"),
+    ("min", " Min"),
+    ("max", " Max"),
+    ("median", " Median"),
+)
+
+
+def _value_getter(key: str) -> Callable[[dict[str, Any]], Any]:
+    """Return a function that reads the given key from the flattened data."""
+    return lambda data: data.get(key)
+
+
 def _build_dynamic_pms_sensors(
     data: dict[str, Any],
 ) -> list[GaiaStationSensorEntityDescription]:
@@ -248,69 +264,18 @@ def _build_dynamic_pms_sensors(
         ]
 
         for pm_key, pm_label, device_class, icon in pm_configs:
-            latest_key = f"{group}_{pm_key}_latest"
-            mean_key = f"{group}_{pm_key}_mean"
-            min_key = f"{group}_{pm_key}_min"
-            max_key = f"{group}_{pm_key}_max"
-            median_key = f"{group}_{pm_key}_median"
-
-            if latest_key in data:
+            for stat_key, stat_label in PMS_STATS:
+                key = f"{group}_{pm_key}_{stat_key}"
+                if key not in data:
+                    continue
                 sensors.append(
                     GaiaStationSensorEntityDescription(
-                        key=latest_key,
-                        name=f"{group_label} {pm_label}",
+                        key=key,
+                        name=f"{group_label} {pm_label}{stat_label}",
                         native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
                         device_class=device_class,
                         state_class=SensorStateClass.MEASUREMENT,
-                        value_fn=lambda d, k=latest_key: d.get(k),
-                        icon=icon,
-                    )
-                )
-            if mean_key in data:
-                sensors.append(
-                    GaiaStationSensorEntityDescription(
-                        key=mean_key,
-                        name=f"{group_label} {pm_label} Mean",
-                        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-                        device_class=device_class,
-                        state_class=SensorStateClass.MEASUREMENT,
-                        value_fn=lambda d, k=mean_key: d.get(k),
-                        icon=icon,
-                    )
-                )
-            if min_key in data:
-                sensors.append(
-                    GaiaStationSensorEntityDescription(
-                        key=min_key,
-                        name=f"{group_label} {pm_label} Min",
-                        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-                        device_class=device_class,
-                        state_class=SensorStateClass.MEASUREMENT,
-                        value_fn=lambda d, k=min_key: d.get(k),
-                        icon=icon,
-                    )
-                )
-            if max_key in data:
-                sensors.append(
-                    GaiaStationSensorEntityDescription(
-                        key=max_key,
-                        name=f"{group_label} {pm_label} Max",
-                        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-                        device_class=device_class,
-                        state_class=SensorStateClass.MEASUREMENT,
-                        value_fn=lambda d, k=max_key: d.get(k),
-                        icon=icon,
-                    )
-                )
-            if median_key in data:
-                sensors.append(
-                    GaiaStationSensorEntityDescription(
-                        key=median_key,
-                        name=f"{group_label} {pm_label} Median",
-                        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-                        device_class=device_class,
-                        state_class=SensorStateClass.MEASUREMENT,
-                        value_fn=lambda d, k=median_key: d.get(k),
+                        value_fn=_value_getter(key),
                         icon=icon,
                     )
                 )

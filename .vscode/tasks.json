@@ -15,13 +15,6 @@
       "detail": "Upgrades the environment"
     },
     {
-      "command": "scripts/test",
-      "label": "Run tests",
-      "problemMatcher": [],
-      "type": "shell",
-      "detail": "Runs tests"
-    },
-    {
       "command": "scripts/lint",
       "label": "Run lint checks",
       "problemMatcher": [],

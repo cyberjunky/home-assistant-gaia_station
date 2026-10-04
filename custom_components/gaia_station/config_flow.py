@@ -5,11 +5,9 @@ import logging
 from typing import Any
 
 import voluptuous as vol
-
-from homeassistant import config_entries
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import GaiaStationApiClient, GaiaStationApiError
@@ -41,23 +39,24 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     }
 
 
-class GaiaStationConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class GaiaStationConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for GAIA Station."""
 
     VERSION = 1
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle the initial step."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
+            user_input[CONF_HOST] = user_input[CONF_HOST].strip()
             try:
                 info = await validate_input(self.hass, user_input)
             except GaiaStationApiError:
                 errors["base"] = "cannot_connect"
-            except Exception:  # noqa: BLE001
+            except Exception:
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
             else:

@@ -22,7 +22,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     session = async_get_clientsession(hass)
     client = GaiaStationApiClient(entry.data[CONF_HOST], session)
 
-    coordinator = GaiaStationDataUpdateCoordinator(hass, client)
+    coordinator = GaiaStationDataUpdateCoordinator(hass, entry, client)
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})

@@ -58,6 +58,7 @@ All sensors are created automatically based on what data your specific station m
 
 - **GAIA air quality station** (A08, A12, or A18) with WiFi connectivity
 - **Station IP address** accessible from Home Assistant
+- Home Assistant 2026.3.0 or newer (Python 3.14)
 
 ## Installation
 
@@ -176,7 +177,7 @@ Then perform any steps to reproduce the issue and disable debug logging again. I
 Quick-start (from project root):
 
 ```bash
-python3 -m venv .venv
+python3.14 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements_lint.txt

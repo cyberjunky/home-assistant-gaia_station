@@ -4,11 +4,11 @@ set -e
 
 cd "$(dirname "$0")/.."
 
-# Determine the Home Assistant command to use (need full path for sudo)
+# Determine the Home Assistant command to use
 if command -v hass &> /dev/null; then
-  HASS_CMD="$(which hass)"
+  HASS_CMD="hass"
 else
-  HASS_CMD="$(which python3) -m homeassistant"
+  HASS_CMD="python3 -m homeassistant"
 fi
 
 if [ ! -f "${PWD}/config/configuration.yaml" ]; then
@@ -19,11 +19,14 @@ if [ ! -f "${PWD}/config/configuration.yaml" ]; then
 logger:
   default: info
   logs:
-    custom_components.gaia_station: debug"
+    custom_components.gaia_station: debug" >> "${PWD}/config/configuration.yaml"
 fi
 
-# Set the python path to include our custom_components directory
-export PYTHONPATH="${PYTHONPATH}:${PWD}/custom_components"
+# Link our custom_components directory into the config directory so Home
+# Assistant finds the integration.
+if [ ! -e "${PWD}/config/custom_components" ]; then
+  ln -s ../custom_components "${PWD}/config/custom_components"
+fi
 
-# Start Home Assistant with sudo for raw socket access (ARP scanning)
-sudo -E ${HASS_CMD} --config "${PWD}/config" --debug
+# Start Home Assistant
+${HASS_CMD} --config "${PWD}/config" --debug
