@@ -10,6 +10,9 @@
 
 A Home Assistant custom integration that monitors [GAIA air quality stations](https://aqicn.org/gaia/) (A08, A12, A18) over your local network. Get real-time insights into particulate matter, CO₂ levels, and more — no cloud required.
 
+> [!NOTE]
+> This integration only works with a GAIA station that Home Assistant can reach directly over the network, by its IP address. It reads the data from the station itself, not from aqicn.org, so stations you can only see on the AQICN website or map (someone else's, or your own at a location Home Assistant cannot reach) are not supported.
+
 ## Supported Features
 
 Monitor your GAIA station with these sensors (created dynamically based on your model):
@@ -57,7 +60,7 @@ All sensors are created automatically based on what data your specific station m
 ## Requirements
 
 - **GAIA air quality station** (A08, A12, or A18) with WiFi connectivity
-- **Station IP address** accessible from Home Assistant
+- **Station IP address** reachable from Home Assistant over the network
 - Home Assistant 2026.3.0 or newer (Python 3.14)
 
 ## Installation
